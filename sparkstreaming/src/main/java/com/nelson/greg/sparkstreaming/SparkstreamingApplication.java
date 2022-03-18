@@ -13,7 +13,9 @@ import scala.Tuple2;
 
 public class SparkstreamingApplication {
 	public static void main(String[] args) throws InterruptedException {
+		
 		System.setProperty("hadoop.home.dir", "c:/hadoop");
+		
 		Logger.getLogger("org.apache").setLevel(Level.WARN);
 		Logger.getLogger("org.apache.spark.storage").setLevel(Level.ERROR);
 
@@ -24,8 +26,10 @@ public class SparkstreamingApplication {
 		JavaReceiverInputDStream<String> inputData = sc.socketTextStream("localhost", 8989);
 
 		JavaDStream<String> results = inputData.map(item -> item);
+		
 		JavaPairDStream<String, Long> pairDStream = results
 				.mapToPair(rawLogMessage -> new Tuple2<>(rawLogMessage.split(",")[0], 1L));
+
 		pairDStream = pairDStream.reduceByKeyAndWindow((x, y) -> x + y, Durations.minutes(2));
 
 		pairDStream.print();
